@@ -19,8 +19,8 @@ extra-source-files:  CHANGELOG.md
 
 executable raytraycer
   main-is:             Main.hs
-  -- other-modules:
+  other-modules: Vec3
   -- other-extensions:
   build-depends:       base >=4.16 && <4.17
-  -- hs-source-dirs:
+  hs-source-dirs: src
   default-language:    Haskell2010
