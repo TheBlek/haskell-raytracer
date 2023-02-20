@@ -19,7 +19,7 @@ extra-source-files:  CHANGELOG.md
 
 executable raytracer
   main-is:             Main.hs
-  other-modules: Vec3, Point, Color
+  other-modules: Vec3, Point, Color, Ray
   -- other-extensions:
   build-depends:       base >=4.16 && <4.17
   hs-source-dirs: src
