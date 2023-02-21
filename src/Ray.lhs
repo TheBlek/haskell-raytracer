@@ -5,6 +5,7 @@ module Ray where
 import Vec3
 import Point
 import Sphere
+import Data.Maybe
 
 \end{code}
 
@@ -35,14 +36,22 @@ R - radius of sphere
 If discriminant is negative then there is no intersection with sphere
 \begin{code}
 
-ray_sphere_discriminant :: Ray -> Sphere -> Double
-ray_sphere_discriminant (Ry origin dir) (Sph center r) = discriminant
+ray_sphere_intersection :: Ray -> Sphere -> Maybe Double
+ray_sphere_intersection (Ry origin dir) (Sph center r) = 
+    if discriminant >= 0 then
+        Just ((-b_half - discriminant) / a)
+    else
+        Nothing
     where 
         origin_spherical = origin - center -- (A - C)
-        discriminant = (dir `dot` origin_spherical) ^ 2 - (dir `dot` dir) * ((origin_spherical `dot` origin_spherical) - r*r) 
+        b_half = dir `dot` origin_spherical
+        a = length_sqr dir
+        c = (length_sqr origin_spherical) - r*r
+        discriminant = b_half ^ 2 - a * c 
+
 
 intersects :: Ray -> Sphere -> Bool
-intersects ray = (>= 0) . (ray_sphere_discriminant ray)
-        
+intersects ray = (maybe False (>=0)) . (ray_sphere_intersection ray)
+
 
 \end{code}

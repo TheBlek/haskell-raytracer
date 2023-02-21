@@ -31,7 +31,7 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let sphere = Sph (Vc3 0 0 (-1)) (0.3)
+    let sphere = Sph (Vc3 0 0 (1)) (0.3)
     let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length)
     let rays = [Ry zero (viewport_left_corner + (u * viewport_width) *>> forward + (v * viewport_height) *>> up) |
             v <- [0, 1/(image_height - 1)..1],
