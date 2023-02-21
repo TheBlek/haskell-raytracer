@@ -41,3 +41,5 @@ main = do
     write_file "output.ppm" colors
 
     return ()
+    
+    --hello
