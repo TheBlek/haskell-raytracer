@@ -6,6 +6,7 @@ import Vec3
 import Point
 import Sphere
 import Control.Monad
+import Color
 
 \end{code}
 
@@ -18,7 +19,7 @@ instance Show Ray where
 
 \end{code}
 
-Можем поменять название at ну типа как ещё конечную точку назвать
+
 
 \begin{code}
 
@@ -26,6 +27,7 @@ atPoint :: Ray -> Double -> Point
 atPoint ray t = orig ray + (dir ray <<* t) 
 
 \end{code}
+
 D = (b * (A - C))^2 - (b * b) * ((A - C) * (A - C) - R^2)
 where 
 b - direction of ray
@@ -34,6 +36,7 @@ C - center of sphere
 R - radius of sphere
 
 If discriminant is negative then there is no intersection with sphere
+
 \begin{code}
 
 sphere_intersection :: Ray -> Sphere -> Maybe Double
@@ -60,4 +63,13 @@ sphere_intersection_normal :: Ray -> Sphere -> Maybe Vec3
 sphere_intersection_normal ray sphere = sphere_intersection_point ray sphere
     >>= Just . (subtract $ center sphere) 
     >>= Just . norm 
+\end{code}
+
+
+\begin{code}
+
+make_shadow :: Vec3 -> Vec3 -> Color -> Color
+make_shadow light normal (Cl vec) = Cl (vec <<* (abs(norm light `dot` norm normal) ** 3))
+
+
 \end{code}
