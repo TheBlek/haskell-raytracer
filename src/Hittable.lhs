@@ -1,4 +1,5 @@
 \begin{code}
+{-# LANGUAGE TupleSections #-}
 module Hittable where 
 
 import Ray
@@ -8,37 +9,51 @@ import Vec3
 import Control.Monad
 import Data.Maybe
 import Safe
+import Data.List
 \end{code}
 
 Класс объектов, с которыми может пересекаться луч
 
 \begin{code}
 class Hittable a where
-    hit_point :: Ray -> (Double, Double) -> a -> Maybe Point
     hit_normal :: Ray -> (Double, Double) -> a -> Maybe Vec3
+
+    hit_dist :: Ray -> (Double, Double) -> a -> Maybe Double
+
+    hit_point :: Ray -> (Double, Double) -> a -> Maybe Point
+    hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
+
     hits :: Ray -> (Double, Double) -> a -> Bool
     hits r obj = isJust . (hit_point r obj)
+
 \end{code}
 
 Просто достал функции из Ray.lhs и переименовал
 
 \begin{code}
 instance Hittable Sphere where
-    hit_point ray (tmin, tmax) = sphere_intersection ray >=> 
-        headMay . filter (>=tmin) . filter (<=tmax) >=>
-        Just . atPoint ray
+    hit_dist ray (tmin, tmax) = headMay 
+        . filter (>=tmin) . filter (<=tmax)
+        <=< sphere_intersection ray
 
     hit_normal ray bounds sphere = hit_point ray bounds sphere
         >>= Just . norm . (subtract $ center sphere) 
+
 \end{code}
 
-begin{code}
+\begin{code}
 
 instance (Hittable a) => Hittable [a] where
-    hit_point ray (tmin, tmax) = headMay . minimum . filter (>=tmin) . filter (<=tmax) 
-        . concat . map (sphere_intersection ray) 
+    hit_dist ray (tmin, tmax) = foldl (\nearest el -> 
+            maybe nearest return (nearest >>= \max -> hit_dist ray (tmin, max) el)
+        ) Nothing
 
-end{code}
+    hit_normal ray (tmin, tmax) = hit_normal ray (tmin, tmax) <=< snd
+        . foldl(\prev@(nearest, _) el ->
+            maybe prev id 
+                    (hit_dist ray (tmin, nearest) el >>= return . (,Just el))
+        ) (tmax, Nothing)
+\end{code}
 
 D = (b * (A - C))^2 - (b * b) * ((A - C) * (A - C) - R^2)
 where 

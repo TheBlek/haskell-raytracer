@@ -18,11 +18,11 @@ viewport_width = aspect_ratio * viewport_height
 
 focal_length = 1
 
-color_ray :: Sphere -> Ray -> Color
-color_ray sphere ray = maybe background map_normal point
+color_ray :: [Sphere] -> Ray -> Color
+color_ray objs ray = maybe background map_normal normal
     where 
-        map_normal point = make_shadow (Vc3 1 (0.3) (-1)) (center sphere - point) (Cl ((255 * 0.5) *>> (point + one)))
-        point = hit_normal ray (0.001, 100) sphere
+        map_normal normal = make_shadow (Vc3 1 (0.3) (-1)) normal (Cl ((255 * 0.5) *>> (normal + one)))
+        normal = hit_normal ray (0.001, 100) objs
         background = blend blue white ((/ viewport_height) . (+ viewport_height/2) . y . dir $ ray)
 
 write_file :: String -> [Color] -> IO ()
@@ -36,11 +36,12 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 main :: IO ()
 main = do
     let sphere = Sph (Vc3 0 0.2 (-1)) (0.5)
+    let sphere2 = Sph (Vc3 0.2 0.2 (-0.6)) (0.2)
     let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length)
     let rays = [Ry zero (viewport_left_corner + (u * viewport_width) *>> forward + (v * viewport_height) *>> up) |
             v <- reverse [0, 1/(image_height - 1)..1],
             u <- [0, 1/(image_width - 1)..1]]
-    let colors = map (color_ray sphere) rays
+    let colors = map (color_ray [sphere, sphere2]) rays
 
     write_file "output.ppm" colors
 

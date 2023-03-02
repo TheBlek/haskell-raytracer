@@ -34,5 +34,4 @@ atPoint ray t = orig ray + (dir ray <<* t)
 make_shadow :: Vec3 -> Vec3 -> Color -> Color
 make_shadow light normal (Cl vec) = Cl (vec <<* (abs(norm light `dot` norm normal) ** 3))
 
-
 \end{code}
