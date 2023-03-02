@@ -13,7 +13,7 @@ data Color = Cl {color::Vec3}
 instance Show Color where
     show (Cl (Vc3 r g b)) = do
         let scale = 1 / samples_per_pixel
-        show (round $ clamp (scale * r) 0 (0.999) * 256) ++ " " ++ show (round $ clamp (scale * g) 0 (0.999) * 256) ++ " " ++ show (round $ clamp (scale * b) 0 (0.999) * 256)
+        show (round $ (*256) $ clamp (scale * r) 0 (0.999)) ++ " " ++ show (round $ (*256) $ clamp (scale * g) 0 (0.999)) ++ " " ++ show (round $ (*256) $ clamp (scale * b) 0 (0.999))
             where clamp x min max = if x < min then min else if x > max then max else x
 \end{code}
 
