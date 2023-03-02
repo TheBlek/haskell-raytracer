@@ -1,7 +1,7 @@
 \begin{code}
 
 module Color where
-
+import System.IO
 import Vec3
 
 \end{code}
@@ -15,6 +15,9 @@ instance Show Color where
         let scale = 1 / samples_per_pixel
         show (round $ (*256) $ clamp (scale * r) 0 (0.999)) ++ " " ++ show (round $ (*256) $ clamp (scale * g) 0 (0.999)) ++ " " ++ show (round $ (*256) $ clamp (scale * b) 0 (0.999))
             where clamp x min max = if x < min then min else if x > max then max else x
+
+(<++>) (Cl vec1) (Cl vec2) = Cl (vec1 + vec2)
+
 \end{code}
 
 some constants
