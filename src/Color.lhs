@@ -11,8 +11,10 @@ import Vec3
 data Color = Cl {color::Vec3}
 
 instance Show Color where
-    show (Cl (Vc3 r g b)) = show (floor r) ++ " " ++ show (floor g) ++ " " ++ show (floor b)
-
+    show (Cl (Vc3 r g b)) = do
+        let scale = 1 / samples_per_pixel
+        show (round $ clamp (scale * r) 0 (0.999) * 256) ++ " " ++ show (round $ clamp (scale * g) 0 (0.999) * 256) ++ " " ++ show (round $ clamp (scale * b) 0 (0.999) * 256)
+            where clamp x min max = if x < min then min else if x > max then max else x
 \end{code}
 
 some constants
@@ -35,5 +37,7 @@ red = Cl (Vc3 255 0 0)
 blue = Cl (Vc3 0 0 255)
 
 green = Cl (Vc3 0 255 0)
+
+samples_per_pixel = 100
 
 \end{code}
