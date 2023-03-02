@@ -7,6 +7,7 @@ import Ray
 import Color
 import Point
 import Sphere
+import Hittable
 
 aspect_ratio = 16 / 9
 image_height = 360
@@ -21,7 +22,7 @@ color_ray :: Sphere -> Ray -> Color
 color_ray sphere ray = maybe background map_normal point
     where 
         map_normal point = make_shadow (Vc3 1 (0.3) (-1)) (center sphere - point) (Cl ((255 * 0.5) *>> (point + one)))
-        point = sphere_intersection_normal ray sphere
+        point = hit_normal ray (0.001, 100) sphere
         background = blend blue white ((/ viewport_height) . (+ viewport_height/2) . y . dir $ ray)
 
 write_file :: String -> [Color] -> IO ()
