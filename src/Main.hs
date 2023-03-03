@@ -13,7 +13,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 360
+image_height = 720
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -38,7 +38,7 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 200
+    let samples_per_pixel = 100
     let sphere = Sph (Vc3 0 0.2 (-1.5)) (0.5)
     let sphere2 = Sph (Vc3 0.4 0.2 (-1.3)) (0.3)
     let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length)
