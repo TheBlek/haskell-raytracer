@@ -1,4 +1,6 @@
 \begin{code}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 {-# LANGUAGE TupleSections #-}
 module Hittable where 
 
@@ -10,6 +12,7 @@ import Control.Monad
 import Data.Maybe
 import Safe
 import Data.List
+import Data.Functor
 \end{code}
 
 Класс объектов, с которыми может пересекаться луч
@@ -24,7 +27,7 @@ class Hittable a where
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
 
     hits :: Ray -> (Double, Double) -> a -> Bool
-    hits r obj = isJust . (hit_point r obj)
+    hits r obj = isJust . hit_point r obj
 
 \end{code}
 
@@ -37,8 +40,8 @@ instance Hittable Sphere where
         <=< sphere_intersection ray
 
     hit_normal ray bounds sphere = hit_point ray bounds sphere
-        >>= return . norm . (subtract $ center sphere) 
-        >>= return . (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
+        <&> norm . subtract (center sphere)
+        <&> (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
 
 \end{code}
 
@@ -47,14 +50,14 @@ instance Hittable Sphere where
 instance (Hittable a) => Hittable [a] where
     hit_dist ray (tmin, tmax) = (\x -> if x == tmax then Nothing else return x)
         . foldl(\nearest el ->
-            maybe nearest id (hit_dist ray (tmin, nearest) el)
+            fromMaybe nearest (hit_dist ray (tmin, nearest) el)
         ) tmax
 
 
     hit_normal ray (tmin, tmax) = hit_normal ray (tmin, tmax) <=< snd
         . foldl(\prev@(nearest, _) el ->
-            maybe prev id 
-                    (hit_dist ray (tmin, nearest) el >>= return . (,Just el))
+            fromMaybe prev
+                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
         ) (tmax, Nothing)
 \end{code}
 
@@ -82,6 +85,6 @@ sphere_intersection (Ry origin dir) (Sph center r) =
         origin_spherical = origin - center -- (A - C)
         b_half = dir `dot` origin_spherical
         a = length_sqr dir
-        c = (length_sqr origin_spherical) - r*r
+        c = length_sqr origin_spherical - r*r
         discriminant = b_half*b_half - a * c 
 \end{code}

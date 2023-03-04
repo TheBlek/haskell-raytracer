@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
+
 module Main where
 
 import System.IO
@@ -25,7 +28,7 @@ focal_length = 1
 color_ray :: Hittable a => a -> Ray -> Color
 color_ray objs ray = maybe background map_normal normal
     where 
-        map_normal normal = make_shadow (Vc3 1 (0.3) (-1)) normal (Cl ((255 * 0.5) *>> (normal + one)))
+        map_normal normal = make_shadow (Vc3 1 0.3 (-1)) normal (Cl ((255 * 0.5) *>> (normal + one)))
         normal = hit_normal ray (0.0001, 100) objs
         background = blend blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
 
@@ -40,18 +43,18 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 main :: IO ()
 main = do
     let samples_per_pixel = 50
-    let sphere = Sph (Vc3 0 0.2 (-1.5)) (0.5)
-    let sphere2 = Sph (Vc3 0 (-1) 0) (10)
+    let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5
+    let sphere2 = Sph (Vc3 0 (-100.5) 0) 100
     let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length)
-    let rays = map (\(Cl vec) -> (Cl (vec <<\ samples_per_pixel))) [multi_color u v (floor samples_per_pixel)|
+    let rays = [(\(Cl vec) -> Cl (vec <<\ samples_per_pixel)) (multi_color u v (floor samples_per_pixel))|
             v <-  reverse [0, 1/(image_height - 1)..1],
             u <-  [0, 1/(image_width - 1)..1]]
                 where multi_color u v 0 = Cl zero
                       multi_color u v n = color_ray [sphere, sphere2]
                         (Ry zero (
                             viewport_left_corner 
-                            + forward <<* (u * viewport_width + (randomDbl (2*n::Int)) / (image_width - 1))
-                            + up <<* (v * viewport_height + (randomDbl (2*n-1::Int)) / (image_height - 1))
+                            + forward <<* (u * viewport_width + randomDbl (2*n::Int) / (image_width - 1))
+                            + up <<* (v * viewport_height + randomDbl (2*n-1::Int) / (image_height - 1))
                                  )
                         ) <++>  multi_color u v (n - 1)
     write_file "output.ppm" rays
