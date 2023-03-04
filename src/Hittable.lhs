@@ -37,16 +37,19 @@ instance Hittable Sphere where
         <=< sphere_intersection ray
 
     hit_normal ray bounds sphere = hit_point ray bounds sphere
-        >>= Just . norm . (subtract $ center sphere) 
+        >>= return . norm . (subtract $ center sphere) 
+        >>= return . (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
 
 \end{code}
 
 \begin{code}
 
 instance (Hittable a) => Hittable [a] where
-    hit_dist ray (tmin, tmax) = foldl (\nearest el -> 
-            maybe nearest return (nearest >>= \max -> hit_dist ray (tmin, max) el)
-        ) Nothing
+    hit_dist ray (tmin, tmax) = (\x -> if x == tmax then Nothing else return x)
+        . foldl(\nearest el ->
+            maybe nearest id (hit_dist ray (tmin, nearest) el)
+        ) tmax
+
 
     hit_normal ray (tmin, tmax) = hit_normal ray (tmin, tmax) <=< snd
         . foldl(\prev@(nearest, _) el ->
