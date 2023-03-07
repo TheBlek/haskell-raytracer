@@ -27,9 +27,9 @@ class Hittable a where
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
  
     hit_data :: Ray -> (Double, Double) -> a -> Maybe (Point, Vec3)
-    hit_data ray bounds obj = (hit_point ray bounds obj) 
-        >>= (return . (,)) 
-        >>= (<$> hit_normal ray bounds obj)
+    hit_data ray bounds obj = (,) 
+        <$> (hit_point ray bounds obj)
+        <*> (hit_normal ray bounds obj)
 
     hits :: Ray -> (Double, Double) -> a -> Bool
     hits r obj = isJust . hit_point r obj

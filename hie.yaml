@@ -1,0 +1,25 @@
+cradle:
+  cabal:
+    - path: "src/Main.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/Vec3.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/Point.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/Color.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/Ray.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/Sphere.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/Hittable.hs"
+      component: "raytracer:exe:raytracer"
+
+    - path: "src/MyRandom.hs"
+      component: "raytracer:exe:raytracer"

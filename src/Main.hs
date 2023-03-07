@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 module Main where
 
 import System.IO
@@ -26,9 +28,9 @@ color_ray depth objs ray
     | depth < 10 = maybe background map_hit hit
     | otherwise = Cl zero
     where 
-        map_hit (point, normal) = blend (color_ray (depth + 1) objs (Ry point (normal + randomVec3_in_sphere (randomInt depth)))) black (0.5)
-        hit = hit_data ray (0,100) objs
-        background = blend blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
+        map_hit (point, normal) = blend (color_ray (depth + 1) objs (Ry point (normal + randomVec3_in_sphere depth))) black 0.5
+        hit = hit_data ray (0.0001, 100) objs
+        background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
 
 write_file :: String -> [Color] -> IO ()
 write_file filename colors = withFile filename WriteMode (\handle -> do
@@ -40,11 +42,11 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 100
-    let sphere = Sph (Vc3 0 0.2 (-1.5)) (0.5)
-    let sphere2 = Sph (Vc3 0 (-100.5) 0) (100)
+    let samples_per_pixel = 50
+    let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5
+    let sphere2 = Sph (Vc3 0 (-100.5) 0) 100
     let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length)
-    let rays = map (\(Cl vec) -> (Cl (vec <<\ samples_per_pixel))) [multi_color u v (floor samples_per_pixel)|
+    let rays = [(\(Cl vec) -> Cl (vec <<\ samples_per_pixel)) $ multi_color u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1],
             u <-  [0, 1/(image_width - 1)..1]]
                 where multi_color u v 0 = Cl zero
