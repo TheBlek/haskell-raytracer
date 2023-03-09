@@ -4,6 +4,7 @@ module Main where
 
 import System.IO
 import System.Random
+import Control.Monad.State
 
 import Vec3
 import Ray
@@ -22,7 +23,7 @@ viewport_height = 2
 viewport_width = aspect_ratio * viewport_height
 
 focal_length = 1
-
+{-}
 color_ray :: Hittable a => Int -> a -> Ray -> Color
 color_ray depth objs ray 
     | depth < 10 = maybe background map_hit hit
@@ -31,7 +32,19 @@ color_ray depth objs ray
         map_hit (point, normal) = blend (color_ray (depth + 1) objs (Ry point (normal + randomVec3_in_sphere depth))) black 0.5
         hit = hit_data ray (0.0001, 100) objs
         background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
+-}
 
+color_ray :: Hittable a => Int -> a -> Ray -> State Int Color
+color_ray depth objs ray = do
+    seed <- get
+    let (point, normal) = maybe (zero, zero) (\x -> x) hit
+    color <- color_ray (depth + 1) objs (Ry point (normal + randomVec3_in_sphere seed))
+    let map_hit color = blend color black 0.5
+    put $ randomInt seed 
+    if depth < 10 then return $ map_hit color else return $ Cl zero
+    where 
+        background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
+        hit = hit_data ray (0.0001, 100) objs
 write_file :: String -> [Color] -> IO ()
 write_file filename colors = withFile filename WriteMode (\handle -> do
     hPutStrLn handle "P3"
@@ -45,7 +58,7 @@ main = do
     let samples_per_pixel = 50
     let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5
     let sphere2 = Sph (Vc3 0 (-100.5) 0) 100
-    let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length)
+    let viewport_left_corner = Vc3 (-viewport_width/2) (-viewport_height/2) (-focal_length){-
     let rays = [(\(Cl vec) -> Cl (vec <<\ samples_per_pixel)) $ multi_color u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1],
             u <-  [0, 1/(image_width - 1)..1]]
@@ -57,7 +70,9 @@ main = do
                             + up <<* (v * viewport_height + (randomDbl (2*n-1::Int)) / (image_height - 1))
                                  )
                         ) <++>  multi_color u v (n - 1)
-    write_file "output.ppm" rays
+    -}
+    --write_file "output.ppm" rays
+    print (1)
  
     return ()
     
