@@ -15,7 +15,11 @@ data Color = Cl {color::Vec3}
 instance Show Color where
     show (Cl (Vc3 r g b)) = show (floor r) ++ " " ++ show (floor g) ++ " " ++ show (floor b)
 
+(<++>):: Color -> Color -> Color
 (<++>) (Cl vec1) (Cl vec2) = Cl (vec1 + vec2)
+
+(<<**):: Color -> Double -> Color
+(<<**) (Cl vec) num = Cl (vec <<* num)
 
 \end{code}
 
