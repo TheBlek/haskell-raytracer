@@ -16,7 +16,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 360
+image_height = 720
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -28,14 +28,15 @@ focal_length = 1
 
 color_ray :: Hittable a => Int -> a -> Ray -> State StdGen Color
 color_ray depth objs ray 
-    | depth >= 10 = return $ Cl zero
+    | depth >= 20 = return $ Cl zero
     | otherwise = do
         offset <- random_vec_in_sphereS
 
-        let color (point, normal) = color_ray (depth + 1) objs (Ry point (normal + offset))
-        let map_hit hit = (\clr -> blend clr black 0.5) <$> color hit
-        let background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
+        let color (((point, normal), new_clr), _) = color_ray (depth + 1) objs (Ry point (normal + offset))
+        let color_sphere (((_,_), clr), _) = clr 
+        let map_hit hit = (\clr -> (blend clr (color_sphere hit) 0.5) <<** 0.5) <$> color hit
         let hit = hit_data ray (0.0001, 100) objs
+        let background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
 
         maybe (return background) map_hit hit
 
@@ -66,8 +67,8 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 main :: IO ()
 main = do
     let samples_per_pixel = 100
-    let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5
-    let sphere2 = Sph (Vc3 0 (-100.5) 0) 100
+    let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5 green ""
+    let sphere2 = Sph (Vc3 0 (-100.5) 0) 100 red ""
     let objs = [sphere, sphere2]
     let accumulated_color = [multi_color objs u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1], 

@@ -13,6 +13,7 @@ import Data.Maybe
 import Safe
 import Data.List
 import Data.Functor
+import Color
 \end{code}
 
 Класс объектов, с которыми может пересекаться луч
@@ -24,15 +25,25 @@ class Hittable a where
     hit_dist :: Ray -> (Double, Double) -> a -> Maybe Double
 
     hit_point :: Ray -> (Double, Double) -> a -> Maybe Point
+
+    hit_color :: Ray -> (Double, Double) -> a -> Maybe Color
+
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
  
-    hit_data :: Ray -> (Double, Double) -> a -> Maybe (Point, Vec3)
-    hit_data ray bounds obj = (,) 
+    hit_material:: Ray -> (Double, Double) -> a -> Maybe [Char]
+
+    hit_data :: Ray -> (Double, Double) -> a -> Maybe (((Point, Vec3), Color), [Char])
+    hit_data ray bounds obj = (,)
+        <$>((,) 
+        <$> ((,) 
         <$> (hit_point ray bounds obj)
-        <*> (hit_normal ray bounds obj)
+        <*> (hit_normal ray bounds obj))
+        <*> (hit_color ray bounds obj))
+        <*> hit_material ray bounds obj
 
     hits :: Ray -> (Double, Double) -> a -> Bool
     hits r obj = isJust . hit_point r obj
+
 
 \end{code}
 
@@ -47,10 +58,23 @@ instance Hittable Sphere where
     hit_normal ray bounds sphere = hit_point ray bounds sphere
         <&> norm . subtract (center sphere)
         <&> (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
+    
+    hit_color ray bounds sphere = case hits ray bounds sphere of
+        True -> Just $ Sphere.color sphere
+        False -> Nothing 
 
+    hit_material ray bounds sphere = case hits ray bounds sphere of
+        True -> Just $ material sphere
+        False -> Nothing
 \end{code}
 
+
 \begin{code}
+find_nearest_sphere ray (tmin, tmax) obj = snd
+        . foldl(\prev@(nearest, _) el ->
+            fromMaybe prev
+                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
+        ) (tmax, Nothing)
 
 instance (Hittable a) => Hittable [a] where
     hit_dist ray (tmin, tmax) = (\x -> if x == tmax then Nothing else return x)
@@ -60,6 +84,18 @@ instance (Hittable a) => Hittable [a] where
 
 
     hit_normal ray (tmin, tmax) = hit_normal ray (tmin, tmax) <=< snd
+        . foldl(\prev@(nearest, _) el ->
+            fromMaybe prev
+                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
+        ) (tmax, Nothing)
+
+    hit_color ray (tmin, tmax) = hit_color ray (tmin, tmax) <=< snd
+        . foldl(\prev@(nearest, _) el ->
+            fromMaybe prev
+                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
+        ) (tmax, Nothing)
+    
+    hit_material ray (tmin, tmax) = hit_material ray (tmin, tmax) <=< snd
         . foldl(\prev@(nearest, _) el ->
             fromMaybe prev
                     (hit_dist ray (tmin, nearest) el <&> (,Just el))
@@ -78,7 +114,7 @@ If discriminant is negative then there is no intersection with sphere
 \begin{code}
 
 sphere_intersection :: Ray -> Sphere -> Maybe [Double]
-sphere_intersection (Ry origin dir) (Sph center r) = 
+sphere_intersection (Ry origin dir) (Sph center r _ _) = 
     if discriminant >= 0 then
         Just [
             (-b_half - sqrt discriminant) / a,
