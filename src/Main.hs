@@ -23,16 +23,6 @@ viewport_height = 2
 viewport_width = aspect_ratio * viewport_height
 
 focal_length = 1
-{-
-color_ray :: Hittable a => Int -> a -> Ray -> Color
-color_ray depth objs ray 
-    | depth < 10 = maybe background map_hit hit
-    | otherwise = Cl zero
-    where 
-        map_hit (point, normal) = blend (color_ray (depth + 1) objs (Ry point (normal + randomVec3_in_sphere depth))) black 0.5
-        hit = hit_data ray (0.0001, 100) objs
-        background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
--}
 
 color_ray :: Hittable a => Int -> a -> Ray -> State Int Color
 color_ray depth objs ray 
@@ -40,7 +30,7 @@ color_ray depth objs ray
     | otherwise = do
         seed <- get
         let color (point, normal) = color_ray (depth + 1) objs (Ry point (normal + randomVec3_in_sphere seed))
-        let map_hit hit = (\clr -> blend clr black 0.5) <$> color hit
+        let map_hit hit = (\clr -> (<<** 0.5) $ blend clr black 0.5) <$> color hit
         put $ randomInt seed 
         maybe (return background) map_hit hit
         where 
