@@ -30,26 +30,24 @@ class Hittable a where
 
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
  
-    hit_material:: Ray -> (Double, Double) -> a -> Maybe [Char]
+    hit_material:: Ray -> (Double, Double) -> a -> Maybe Material
 
-    hit_data :: Ray -> (Double, Double) -> a -> Maybe (((Point, Vec3), Color), [Char])
-    hit_data ray bounds obj = (,)
-        <$>((,) 
-        <$> ((,) 
-        <$> (hit_point ray bounds obj)
-        <*> (hit_normal ray bounds obj))
-        <*> (hit_color ray bounds obj))
+    hit_data :: Ray -> (Double, Double) -> a -> Maybe (Point, Vec3, Color, Material)
+    hit_data ray bounds obj = (,,,)
+        <$> hit_point ray bounds obj
+        <*> hit_normal ray bounds obj
+        <*> hit_color ray bounds obj
         <*> hit_material ray bounds obj
 
     hits :: Ray -> (Double, Double) -> a -> Bool
     hits r obj = isJust . hit_point r obj
-
 
 \end{code}
 
 Просто достал функции из Ray.lhs и переименовал
 
 \begin{code}
+
 instance Hittable Sphere where
     hit_dist ray (tmin, tmax) = headMay 
         . filter (>=tmin) . filter (<=tmax)
@@ -66,15 +64,20 @@ instance Hittable Sphere where
     hit_material ray bounds sphere = case hits ray bounds sphere of
         True -> Just $ material sphere
         False -> Nothing
+
 \end{code}
 
 
 \begin{code}
-find_nearest_sphere ray (tmin, tmax) obj = snd
-        . foldl(\prev@(nearest, _) el ->
-            fromMaybe prev
-                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
-        ) (tmax, Nothing)
+
+hit_nearest_sph
+  :: (Foldable t, Hittable a) =>
+     Ray.Ray -> (Double, Double) -> t a -> (Double, Maybe a)
+
+hit_nearest_sph ray (tmin, tmax) obj = foldl(\prev@(nearest, _) el ->
+    fromMaybe prev
+        (hit_dist ray (tmin, nearest) el <&> (,Just el))
+        ) (tmax, Nothing) obj
 
 instance (Hittable a) => Hittable [a] where
     hit_dist ray (tmin, tmax) = (\x -> if x == tmax then Nothing else return x)
@@ -82,24 +85,15 @@ instance (Hittable a) => Hittable [a] where
             fromMaybe nearest (hit_dist ray (tmin, nearest) el)
         ) tmax
 
+    hit_normal ray (tmin, tmax) obj = hit_normal ray (tmin, tmax) <=< snd 
+        $ hit_nearest_sph ray (tmin, tmax) obj
 
-    hit_normal ray (tmin, tmax) = hit_normal ray (tmin, tmax) <=< snd
-        . foldl(\prev@(nearest, _) el ->
-            fromMaybe prev
-                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
-        ) (tmax, Nothing)
-
-    hit_color ray (tmin, tmax) = hit_color ray (tmin, tmax) <=< snd
-        . foldl(\prev@(nearest, _) el ->
-            fromMaybe prev
-                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
-        ) (tmax, Nothing)
+    hit_color ray (tmin, tmax) obj = hit_color ray (tmin, tmax) <=< snd
+        $ hit_nearest_sph ray (tmin, tmax) obj
     
-    hit_material ray (tmin, tmax) = hit_material ray (tmin, tmax) <=< snd
-        . foldl(\prev@(nearest, _) el ->
-            fromMaybe prev
-                    (hit_dist ray (tmin, nearest) el <&> (,Just el))
-        ) (tmax, Nothing)
+    hit_material ray (tmin, tmax) obj = hit_material ray (tmin, tmax) <=< snd
+        $ hit_nearest_sph ray (tmin, tmax) obj
+
 \end{code}
 
 D = (b * (A - C))^2 - (b * b) * ((A - C) * (A - C) - R^2)
@@ -128,4 +122,5 @@ sphere_intersection (Ry origin dir) (Sph center r _ _) =
         a = length_sqr dir
         c = length_sqr origin_spherical - r*r
         discriminant = b_half*b_half - a * c 
+
 \end{code}
