@@ -13,7 +13,7 @@ import Point
 \end{code}
 
 \begin{code}
-data Material = Metal Color | Rugged Color  
+data Material = Metal Color Double | Rugged Color  
 
 \end{code}
 
@@ -31,9 +31,10 @@ scatter (point, norm, Rugged color) ray = do
     else
         return (color, Ry point out_dir)
 
-scatter (point, normal, Metal color) ray = do
+scatter (point, normal, Metal color fuzz) ray = do
     let out_dir = reflect (norm . dir $ ray) normal
-    return (color, Ry point out_dir)
+    offset <- random_vec_in_sphereS
+    return (color, Ry point (out_dir + fuzz *>> offset))
 
 
 
