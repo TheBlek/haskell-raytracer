@@ -32,8 +32,8 @@ color_ray depth objs ray
     | otherwise = do
         offset <- random_vec_in_sphereS
 
-        let color (point, normal, _, _) = color_ray (depth + 1) objs (Ry point (normal + offset))
-        let color_sphere (_,_,clr,_) = clr 
+        let color (point, normal, _) = color_ray (depth + 1) objs (Ry point (normal + offset))
+        let color_sphere (_,_,clr) = clr 
         let map_hit hit = (\clr -> (blend clr (color_sphere hit) 0.8) <<** 0.5) <$> color hit
         let hit = hit_data ray (0.0001, 100) objs
         let background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)

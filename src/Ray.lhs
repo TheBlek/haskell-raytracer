@@ -4,7 +4,6 @@ module Ray where
 
 import Vec3
 import Point
-import Sphere
 import Control.Monad
 import Color
 

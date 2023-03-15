@@ -14,11 +14,16 @@ import Safe
 import Data.List
 import Data.Functor
 import Color
+import Material
+
 \end{code}
 
 Класс объектов, с которыми может пересекаться луч
 
 \begin{code}
+
+type HitData = (Point, Vec3, Material)
+
 class Hittable a where
     hit_normal :: Ray -> (Double, Double) -> a -> Maybe Vec3
 
@@ -26,18 +31,14 @@ class Hittable a where
 
     hit_point :: Ray -> (Double, Double) -> a -> Maybe Point
 
-    hit_color :: Ray -> (Double, Double) -> a -> Maybe Color
+    hit_material :: Ray -> (Double, Double) -> a -> Maybe Material
 
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
- 
-    hit_material:: Ray -> (Double, Double) -> a -> Maybe Material
 
-    hit_data :: Ray -> (Double, Double) -> a -> Maybe (Point, Vec3, Color, Material)
-    hit_data ray bounds obj = (,,,)
+    hit_data :: Ray -> (Double, Double) -> a -> Maybe HitData
+    hit_data ray bounds obj = (,)
         <$> hit_point ray bounds obj
         <*> hit_normal ray bounds obj
-        <*> hit_color ray bounds obj
-        <*> hit_material ray bounds obj
 
     hits :: Ray -> (Double, Double) -> a -> Bool
     hits r obj = isJust . hit_point r obj
@@ -57,14 +58,8 @@ instance Hittable Sphere where
         <&> norm . subtract (center sphere)
         <&> (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
     
-    hit_color ray bounds sphere = case hits ray bounds sphere of
-        True -> Just $ Sphere.color sphere
-        False -> Nothing 
-
-    hit_material ray bounds sphere = case hits ray bounds sphere of
-        True -> Just $ material sphere
-        False -> Nothing
-
+    hit_material ray bounds sphere = hit_dist ray bounds sphere >> (material sphere)
+    
 \end{code}
 
 
@@ -88,10 +83,7 @@ instance (Hittable a) => Hittable [a] where
     hit_normal ray (tmin, tmax) obj = hit_normal ray (tmin, tmax) <=< snd 
         $ hit_nearest_sph ray (tmin, tmax) obj
 
-    hit_color ray (tmin, tmax) obj = hit_color ray (tmin, tmax) <=< snd
-        $ hit_nearest_sph ray (tmin, tmax) obj
-    
-    hit_material ray (tmin, tmax) obj = hit_material ray (tmin, tmax) <=< snd
+    hit_material ray (tmin, tmax) obj = (return . material) <=< snd
         $ hit_nearest_sph ray (tmin, tmax) obj
 
 \end{code}
@@ -108,7 +100,7 @@ If discriminant is negative then there is no intersection with sphere
 \begin{code}
 
 sphere_intersection :: Ray -> Sphere -> Maybe [Double]
-sphere_intersection (Ry origin dir) (Sph center r _ _) = 
+sphere_intersection (Ry origin dir) (Sph center r _ ) = 
     if discriminant >= 0 then
         Just [
             (-b_half - sqrt discriminant) / a,
