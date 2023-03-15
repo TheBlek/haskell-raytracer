@@ -29,6 +29,9 @@ adjust_gamma gamma (Cl (Vc3 r g b)) = Cl (Vc3 (adjust r) (adjust g) (adjust b))
     where power = 1 / fromIntegral gamma
           adjust x = ((x / 255) ** power) * 255
 
+average :: Double -> Color -> Color
+average scale (Cl color) = Cl (color <<\ scale)
+
 \end{code}
 
 some constants

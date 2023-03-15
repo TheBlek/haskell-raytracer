@@ -74,7 +74,7 @@ main = do
     let accumulated_color = [multi_color objs u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1], 
             u <-  [0, 1/(image_width - 1)..1]]
-    let colors = mapM (fmap (adjust_gamma 2 . (\(Cl x) -> Cl (x <<\ samples_per_pixel)))) accumulated_color
+    let colors = mapM (fmap (adjust_gamma 2 . average samples_per_pixel)) accumulated_color
     write_file "output.ppm" $ evalState colors (mkStdGen 0)
  
     return ()
