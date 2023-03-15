@@ -67,10 +67,12 @@ main :: IO ()
 main = do
     let samples_per_pixel = 100
     let material1 = Rugged red
-    let material2 = Rugged blue
+    let material2 = Rugged green
+    let material3 = Metal light_blue
     let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5 material1
     let sphere2 = Sph (Vc3 0 (-100.5) 0) 100 material2
-    let objs = [sphere, sphere2]
+    let sphere3 = Sph (Vc3 1 0.2 (-1.5)) 0.5 material3
+    let objs = [sphere, sphere2, sphere3]
     let accumulated_color = [multi_color objs u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1], 
             u <-  [0, 1/(image_width - 1)..1]]

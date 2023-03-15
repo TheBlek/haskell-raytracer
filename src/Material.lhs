@@ -19,6 +19,9 @@ data Material = Metal Color | Rugged Color
 
 \begin{code}
 
+reflect :: Vec3 -> Vec3 -> Vec3
+reflect ray normal = ray - normal <<* 2 <<* dot ray normal
+
 scatter :: (Point, Vec3, Material) -> Ray -> State StdGen (Color, Ray)
 scatter (point, norm, Rugged color) ray = do
     offset <- random_vec_in_sphereS
@@ -27,6 +30,12 @@ scatter (point, norm, Rugged color) ray = do
         return (color, Ry point norm)
     else
         return (color, Ry point out_dir)
+
+scatter (point, normal, Metal color) ray = do
+    let out_dir = reflect (norm . dir $ ray) normal
+    return (color, Ry point out_dir)
+
+
 
 
 
