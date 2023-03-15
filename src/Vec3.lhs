@@ -52,6 +52,10 @@ cross (Vc3 x1 y1 z1) (Vc3 x2 y2 z2) = Vc3 (y1 * z2 + z1 * y2) (x1 * z2 + z1 * x2
 norm :: Vec3 -> Vec3
 norm vc = vc <<\ (Vec3.length vc)
 
+near_zero :: Vec3 -> Bool
+near_zero (Vc3 x y z) = (x <= eps) && (y <= eps) && (z <= eps)
+    where eps = 1e-8
+
 instance Eq Vec3 where
     a == b = length_sqr (a - b) < 1^^(-10) -- Или стоит сделать просто покомпонентное сравнение?
 \end{code}

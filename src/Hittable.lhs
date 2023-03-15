@@ -36,12 +36,13 @@ class Hittable a where
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
 
     hit_data :: Ray -> (Double, Double) -> a -> Maybe HitData
-    hit_data ray bounds obj = (,)
+    hit_data ray bounds obj = (,,)
         <$> hit_point ray bounds obj
         <*> hit_normal ray bounds obj
+        <*> hit_material ray bounds obj
 
     hits :: Ray -> (Double, Double) -> a -> Bool
-    hits r obj = isJust . hit_point r obj
+    hits r bounds = isJust . hit_point r bounds
 
 \end{code}
 
@@ -58,7 +59,7 @@ instance Hittable Sphere where
         <&> norm . subtract (center sphere)
         <&> (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
     
-    hit_material ray bounds sphere = hit_dist ray bounds sphere >> (material sphere)
+    hit_material ray bounds sphere = hit_dist ray bounds sphere >> (return $ material sphere)
     
 \end{code}
 
@@ -83,7 +84,7 @@ instance (Hittable a) => Hittable [a] where
     hit_normal ray (tmin, tmax) obj = hit_normal ray (tmin, tmax) <=< snd 
         $ hit_nearest_sph ray (tmin, tmax) obj
 
-    hit_material ray (tmin, tmax) obj = (return . material) <=< snd
+    hit_material ray (tmin, tmax) obj = hit_material ray (tmin, tmax) <=< snd
         $ hit_nearest_sph ray (tmin, tmax) obj
 
 \end{code}

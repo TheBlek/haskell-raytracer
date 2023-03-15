@@ -21,6 +21,9 @@ instance Show Color where
 (<<**):: Color -> Double -> Color
 (<<**) (Cl vec) num = Cl (vec <<* num)
 
+absorb :: Color -> Color -> Color
+absorb (Cl cl1) (Cl cl2) = Cl (cl1 * cl2 <<\ 255)
+
 \end{code}
 
 some constants
