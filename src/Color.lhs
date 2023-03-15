@@ -24,6 +24,11 @@ instance Show Color where
 absorb :: Color -> Color -> Color
 absorb (Cl cl1) (Cl cl2) = Cl (cl1 * cl2 <<\ 255)
 
+adjust_gamma :: Int -> Color -> Color
+adjust_gamma gamma (Cl (Vc3 r g b)) = Cl (Vc3 (adjust r) (adjust g) (adjust b))
+    where power = 1 / fromIntegral gamma
+          adjust x = ((x / 255) ** power) * 255
+
 \end{code}
 
 some constants

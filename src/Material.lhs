@@ -30,5 +30,4 @@ scatter (point, norm, Rugged color) ray = do
 
 
 
-
 \end{code}

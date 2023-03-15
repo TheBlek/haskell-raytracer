@@ -18,7 +18,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 180
+image_height = 360
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -30,7 +30,7 @@ focal_length = 1
 
 color_ray :: Hittable a => Int -> a -> Ray -> State StdGen Color
 color_ray depth objs ray 
-    | depth >= 20 = return $ Cl zero
+    | depth >= 50 = return $ Cl zero
     | otherwise = do
         let follow_ray = color_ray (depth+1) objs 
         let map_hit hit = scatter hit ray >>= (\(cl, new_ray) -> absorb cl <$> follow_ray new_ray) 
@@ -65,7 +65,7 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 200
+    let samples_per_pixel = 100
     let material1 = Rugged red
     let material2 = Rugged blue
     let sphere = Sph (Vc3 0 0.2 (-1.5)) 0.5 material1
@@ -74,7 +74,7 @@ main = do
     let accumulated_color = [multi_color objs u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1], 
             u <-  [0, 1/(image_width - 1)..1]]
-    let colors = mapM (fmap (\(Cl x) -> Cl (x <<\ samples_per_pixel))) accumulated_color
+    let colors = mapM (fmap (adjust_gamma 2 . (\(Cl x) -> Cl (x <<\ samples_per_pixel)))) accumulated_color
     write_file "output.ppm" $ evalState colors (mkStdGen 0)
  
     return ()
