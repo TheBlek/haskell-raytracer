@@ -8,18 +8,6 @@ import System.Random
 import Vec3
 import Control.Monad.State
 
-randomInt :: Int -> Int
-randomInt seed = fst $ random $ mkStdGen seed
-
-randomDbl :: Int -> Double
-randomDbl seed = fst $ randomR (-1, 1) $ mkStdGen seed
-
-randomVec3 :: Int -> Vec3
-randomVec3 seed = Vc3 (randomDbl seed) (randomDbl $ seed * 2 - 1) (randomDbl $ seed * 2)
-
-randomVec3_in_sphere :: Int -> Vec3
-randomVec3_in_sphere seed = head $ filter (\vec -> length_sqr vec <= 1 ) [randomVec3 new_seed | new_seed <- [(randomInt seed)..]]
-
 randomS :: (Random a) => State StdGen a
 randomS = do
     (x, g) <- gets random
@@ -44,8 +32,6 @@ random_vec_in_sphereS = do
     else random_vec_in_sphereS
 
 randomDbls :: State StdGen Double
-randomDbls = do
-    rand <- randomRS (0, 1)
-    return rand
+randomDbls = randomRS (0, 1) 
 --head . filter (\vec -> length_sqr vec <= 1) <$> sequence [random_vec | i <- [1..]]
 \end{code}

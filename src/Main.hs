@@ -7,6 +7,7 @@ import System.Random
 import Control.Monad.State
 import Control.Parallel.Strategies
 import Data.List.Split
+import Data.Functor
 
 import Vec3
 import Ray
@@ -19,7 +20,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 90
+image_height = 180
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -51,11 +52,9 @@ gen_ray u v = do
         + (up <<* (v + v_offset / (image_height - 1)) <<* viewport_height)
                      )
 
-multi_color :: (Hittable a) => a -> Double -> Double -> Int -> State StdGen Color
-multi_color _ _ _ 0 = return black
-multi_color objs u v n = (<++>) 
-    <$> multi_color objs u v (n - 1) 
-    <*> (gen_ray u v >>= color_ray 0 objs)
+multi_color :: (Hittable a) => a -> Double -> Double -> Int -> Color -> State StdGen Color
+multi_color _ _ _ 0 cl = return cl
+multi_color objs u v n cl = gen_ray u v >>= color_ray 0 objs >>= multi_color objs u v (n - 1) . (<++> cl)
 
 write_file :: String -> [Color] -> IO ()
 write_file filename colors = withFile filename WriteMode (\handle -> do
@@ -68,7 +67,7 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 main :: IO ()
 main = do
     let samples_per_pixel = 50
-    let material1 = Glass (1.5)
+    let material1 = Glass 2
     let material2 = Rugged green
     let material3 = Metal light_blue 0.2
     let material4 = Metal (Cl (Vc3 204 153 51)) 1
@@ -77,9 +76,9 @@ main = do
     let sphere3 = Sph (Vc3 (-1) 0 (-1)) 0.5 material3
     let sphere4 = Sph (Vc3 1 0 (-1)) 0.5 material4
     let objs = [sphere, sphere2, sphere3, sphere4]
-    let accumulated_color = [multi_color objs u v (floor samples_per_pixel)|
+    let accumulated_color = [multi_color objs u v (floor samples_per_pixel) black|
             v <-  reverse [0, 1/(image_height - 1)..1], 
-            u <-  [0, 1/(image_width - 1)..1]]
+            u <-  [0, 1/(image_width - 1)..1]] 
 
     let len = image_height * image_width
     let map_colors = mapM (fmap (adjust_gamma 2 . average samples_per_pixel))

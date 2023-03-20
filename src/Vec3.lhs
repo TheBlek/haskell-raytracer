@@ -64,7 +64,7 @@ cross (Vc3 x1 y1 z1) (Vc3 x2 y2 z2) = Vc3 (y1 * z2 + z1 * y2) (x1 * z2 + z1 * x2
  
 {-# INLINE norm #-}
 norm :: Vec3 -> Vec3
-norm vc = vc <<\ (Vec3.length vc)
+norm vc = vc <<\ Vec3.length vc
 
 near_zero :: Vec3 -> Bool
 near_zero (Vc3 x y z) = (x <= eps) && (y <= eps) && (z <= eps)

@@ -32,7 +32,7 @@ refract normal dir ratio = ray_out_perp + ray_out_par
     where   
         cos_theta = min (dot ((-1) *>> dir) normal) 0
         ray_out_perp = ratio *>> (dir + (cos_theta *>> normal))
-        ray_out_par = (*>> normal) $ (*(-1)) $ sqrt $  abs $ subtract (length_sqr ray_out_perp) $ 1 
+        ray_out_par = (*>> normal) $ (*(-1)) $ sqrt $ abs $ subtract (length_sqr ray_out_perp) 1 
 
 reflect :: Vec3 -> Vec3 -> Vec3
 reflect ray normal = ray - (normal <<* 2 <<* dot ray normal)
