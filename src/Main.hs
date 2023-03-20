@@ -5,6 +5,8 @@ module Main where
 import System.IO
 import System.Random
 import Control.Monad.State
+import Control.Parallel.Strategies
+import Data.List.Split
 
 import Vec3
 import Ray
@@ -18,7 +20,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 360
+image_height = 90
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -65,7 +67,7 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 100
+    let samples_per_pixel = 50
     let material1 = Rugged red
     let material2 = Rugged green
     let material3 = Metal light_blue 0.2
@@ -78,8 +80,14 @@ main = do
     let accumulated_color = [multi_color objs u v (floor samples_per_pixel)|
             v <-  reverse [0, 1/(image_height - 1)..1], 
             u <-  [0, 1/(image_width - 1)..1]]
-    let colors = mapM (fmap (adjust_gamma 2 . average samples_per_pixel)) accumulated_color
-    write_file "output.ppm" $ evalState colors (mkStdGen 0)
- 
+
+    let len = image_height * image_width
+    let map_colors = mapM (fmap (adjust_gamma 2 . average samples_per_pixel))
+    let st_colors = map map_colors $ chunksOf (floor image_width) accumulated_color
+
+    let colors_parts = zipWith (\st i -> evalState st (mkStdGen i)) st_colors [0..]
+    let colors = concat (colors_parts `using` parList rdeepseq)
+    
+    write_file "output.ppm" colors
     return ()
     

@@ -7,9 +7,13 @@ module Vec3 where
 
 
 \begin{code}
+import Control.DeepSeq
 
 data Vec3 = Vc3 {x, y, z:: Double} 
     deriving (Read)
+
+instance NFData Vec3 where
+    rnf (Vc3 x y z) = seq x $ seq y $ seq z ()
 
 instance Show Vec3 where
     show (Vc3 x y z) = "(" ++ (show x) ++ " " ++ (show y) ++ " " ++ (show z) ++ ")" 

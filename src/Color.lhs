@@ -5,12 +5,16 @@
 module Color where
 import System.IO
 import Vec3
+import Control.DeepSeq
 
 \end{code}
 
 \begin{code}
 
 data Color = Cl {color::Vec3}
+
+instance NFData Color where 
+    rnf (Cl x) = rnf x
 
 instance Show Color where
     show (Cl (Vc3 r g b)) = show (floor r) ++ " " ++ show (floor g) ++ " " ++ show (floor b)

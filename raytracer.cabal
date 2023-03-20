@@ -18,9 +18,23 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
 executable raytracer
+  ghc-options: 
+    -O2 
+    -threaded 
+    -rtsopts 
+    -eventlog
+    -prof
+    "-with-rtsopts=-N -s -A64M -G1"
   main-is:             Main.hs
   other-modules: Vec3, Point, Color, Ray, Sphere, Hittable, MyRandom, Material
   -- other-extensions:
-  build-depends:       base >=0.16 && <10.17, safe >= 0.0.0, random > 0.0.0, mtl 
+  build-depends:       
+    base >=0.16 && <10.17,
+    safe >= 0.0.0,
+    random > 0.0.0,
+    mtl, 
+    parallel >= 3.2,
+    split >= 0.2,
+    deepseq >= 1.4
   hs-source-dirs: src
   default-language:    Haskell2010
