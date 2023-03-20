@@ -19,7 +19,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 360
+image_height = 90
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -39,15 +39,15 @@ color_ray depth objs ray
         let background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
 
         maybe (return background) map_hit hit
-
+{-# INLINE gen_ray #-}
 gen_ray :: Double -> Double -> State StdGen Ray
 gen_ray u v = do
     u_offset <- randomRS (0, 1)
     v_offset <- randomRS (0, 1)
     return $ Ry zero (
         viewport_left_corner 
-        + forward <<* (u + u_offset / (image_width - 1)) <<* viewport_width
-        + up <<* (v + v_offset / (image_height - 1)) <<* viewport_height
+        <+> (forward <<* (u + u_offset / (image_width - 1)) <<* viewport_width)
+        <+> (up <<* (v + v_offset / (image_height - 1)) <<* viewport_height)
                      )
 
 multi_color :: (Hittable a) => a -> Double -> Double -> Int -> State StdGen Color
@@ -66,7 +66,7 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 100
+    let samples_per_pixel = 50
     let material1 = Glass (1.5)
     let material2 = Rugged green
     let material3 = Metal light_blue 0.2

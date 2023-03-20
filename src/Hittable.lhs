@@ -56,7 +56,7 @@ instance Hittable Sphere where
         <=< sphere_intersection ray
 
     hit_normal ray bounds sphere = hit_point ray bounds sphere
-        <&> norm . subtract (center sphere)
+        <&> norm . (<-> center sphere)
         <&> (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
     
     hit_material ray bounds sphere = hit_dist ray bounds sphere >> (return $ material sphere)
@@ -110,7 +110,7 @@ sphere_intersection (Ry origin dir) (Sph center r _ ) =
     else
         Nothing
     where 
-        origin_spherical = origin - center -- (A - C)
+        origin_spherical = origin <-> center -- (A - C)
         b_half = dir `dot` origin_spherical
         a = length_sqr dir
         c = length_sqr origin_spherical - r*r

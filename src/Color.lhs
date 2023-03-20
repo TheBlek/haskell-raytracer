@@ -19,14 +19,16 @@ instance NFData Color where
 instance Show Color where
     show (Cl (Vc3 r g b)) = show (floor r) ++ " " ++ show (floor g) ++ " " ++ show (floor b)
 
+{-# INLINE (<++>) #-}
 (<++>):: Color -> Color -> Color
-(<++>) (Cl vec1) (Cl vec2) = Cl (vec1 + vec2)
+(<++>) (Cl vec1) (Cl vec2) = Cl (vec1 <+> vec2)
 
 (<<**):: Color -> Double -> Color
 (<<**) (Cl vec) num = Cl (vec <<* num)
 
+{-# INLINE absorb #-}
 absorb :: Color -> Color -> Color
-absorb (Cl cl1) (Cl cl2) = Cl (cl1 * cl2 <<\ 255)
+absorb (Cl cl1) (Cl cl2) = Cl (cl1 <<*>> cl2 <<\ 255)
 
 adjust_gamma :: Int -> Color -> Color
 adjust_gamma gamma (Cl (Vc3 r g b)) = Cl (Vc3 (adjust r) (adjust g) (adjust b))
@@ -42,9 +44,10 @@ some constants
 
 \begin{code}
 
+{-# INLINE blend #-}
 blend :: Color -> Color -> Double -> Color
 blend cl1 cl2 x 
-    | x <= 1 && x >= 0 = Cl (x *>> (color cl1) + (1 - x) *>> (color cl2)) 
+    | x <= 1 && x >= 0 = Cl (x *>> (color cl1) <+> ((1 - x) *>> (color cl2))) 
     | otherwise = undefined
 
 make_valid :: Color -> Color

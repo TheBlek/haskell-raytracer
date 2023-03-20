@@ -22,9 +22,14 @@ executable raytracer
     -O2 
     -threaded 
     -rtsopts 
-    -eventlog
+    -funfolding-use-threshold=16
+    -optc-O3
+    -optc-ffast-math
     -prof
-    "-with-rtsopts=-N -s -A64M -G1"
+    -fspecialise-aggressively
+    -fexpose-all-unfoldings
+    -- -eventlog
+    "-with-rtsopts=-N -p -A64M "
   main-is:             Main.hs
   other-modules: Vec3, Point, Color, Ray, Sphere, Hittable, MyRandom, Material
   -- other-extensions:

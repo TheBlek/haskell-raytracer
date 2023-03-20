@@ -26,12 +26,14 @@ randomS = do
     put g
     return x
 
+{-# INLINE randomRS #-}
 randomRS :: (Random a) => (a, a) -> State StdGen a
 randomRS range = do
     (x, g) <- gets (randomR range)
     put g
     return x
 
+{-# INLINE random_vec #-}
 random_vec :: State StdGen Vec3
 random_vec = Vc3 <$> randomRS (-1, 1) <*> randomRS (-1, 1) <*> randomRS (-1, 1)
 

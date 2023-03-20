@@ -28,19 +28,19 @@ reflectance cos ratio = b + (1 - b) * ((1 - cos) ** 5)
 
 \begin{code}
 refract:: Vec3 -> Vec3 -> Double -> Vec3
-refract normal dir ratio = ray_out_perp + ray_out_par
+refract normal dir ratio = ray_out_perp <+> ray_out_par
     where   
         cos_theta = min (dot ((-1) *>> dir) normal) 0
-        ray_out_perp = ratio *>> (dir + (cos_theta *>> normal))
+        ray_out_perp = ratio *>> (dir <+> (cos_theta *>> normal))
         ray_out_par = (*>> normal) $ (*(-1)) $ sqrt $  abs $ subtract (length_sqr ray_out_perp) $ 1 
 
 reflect :: Vec3 -> Vec3 -> Vec3
-reflect ray normal = ray - normal <<* 2 <<* dot ray normal
+reflect ray normal = ray <-> (normal <<* 2 <<* dot ray normal)
 
 scatter :: (Point, Vec3, Material) -> Ray -> State StdGen (Color, Ray)
 scatter (point, norm, Rugged color) ray = do
     offset <- random_vec_in_sphereS
-    let out_dir = norm + offset
+    let out_dir = norm <+> offset
     if near_zero out_dir then
         return (color, Ry point norm)
     else
@@ -49,7 +49,7 @@ scatter (point, norm, Rugged color) ray = do
 scatter (point, normal, Metal color fuzz) ray = do
     let out_dir = reflect (norm . dir $ ray) normal
     offset <- random_vec_in_sphereS
-    return (color, Ry point (out_dir + fuzz *>> offset))
+    return (color, Ry point (out_dir <+> (fuzz *>> offset)))
 
 scatter (point, normal, Glass ratio) ray = do
     offset <- randomDbls
