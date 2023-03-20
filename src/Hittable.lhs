@@ -98,6 +98,9 @@ instance (Hittable a) => Hittable [a] where
     hit_material ray (tmin, tmax) obj = hit_material ray (tmin, tmax) <=< snd
         $ hit_nearest_sph ray (tmin, tmax) obj
 
+    hit_data ray bounds obj = hit_data ray bounds <=< snd
+        $ hit_nearest_sph ray bounds obj
+
 \end{code}
 
 D = (b * (A - C))^2 - (b * b) * ((A - C) * (A - C) - R^2)
