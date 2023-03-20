@@ -39,6 +39,7 @@ color_ray depth objs ray
         let background = blend light_blue white ((/ viewport_height) . (+ viewport_height/2) . y . norm . dir $ ray)
 
         maybe (return background) map_hit hit
+
 {-# INLINE gen_ray #-}
 gen_ray :: Double -> Double -> State StdGen Ray
 gen_ray u v = do
@@ -46,8 +47,8 @@ gen_ray u v = do
     v_offset <- randomRS (0, 1)
     return $ Ry zero (
         viewport_left_corner 
-        <+> (forward <<* (u + u_offset / (image_width - 1)) <<* viewport_width)
-        <+> (up <<* (v + v_offset / (image_height - 1)) <<* viewport_height)
+        + (forward <<* (u + u_offset / (image_width - 1)) <<* viewport_width)
+        + (up <<* (v + v_offset / (image_height - 1)) <<* viewport_height)
                      )
 
 multi_color :: (Hittable a) => a -> Double -> Double -> Int -> State StdGen Color

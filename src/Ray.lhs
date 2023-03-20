@@ -24,7 +24,7 @@ instance Show Ray where
 
 {-# INLINE atPoint #-}
 atPoint :: Ray -> Double -> Point
-atPoint ray t = orig ray <+> (dir ray <<* t) 
+atPoint ray t = orig ray + (dir ray <<* t) 
 
 \end{code}
 

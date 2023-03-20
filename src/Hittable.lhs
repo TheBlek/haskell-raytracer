@@ -51,15 +51,21 @@ class Hittable a where
 \begin{code}
 
 instance Hittable Sphere where
-    hit_dist ray (tmin, tmax) = headMay 
-        . filter (>=tmin) . filter (<=tmax)
-        <=< sphere_intersection ray
+    hit_dist ray (tmin, tmax) sph = sphere_intersection ray sph >>=
+        (\(x0, x1) ->  if x0 < tmin || x0 > tmax then
+                            if x1 > tmax || x1 < tmin then
+                                Nothing
+                            else
+                                Just x1
+                       else
+                            Just x0
+        )
 
     hit_normal ray bounds sphere = hit_point ray bounds sphere
-        <&> norm . (<-> center sphere)
+        <&> norm . subtract (center sphere)
         <&> (\normal -> normal <<* (negate . signum . dot (dir ray) $ normal))
     
-    hit_material ray bounds sphere = hit_dist ray bounds sphere >> (return $ material sphere)
+    hit_material ray bounds sphere = hit_dist ray bounds sphere >> return (material sphere)
     
 \end{code}
 
@@ -70,10 +76,10 @@ hit_nearest_sph
   :: (Foldable t, Hittable a) =>
      Ray.Ray -> (Double, Double) -> t a -> (Double, Maybe a)
 
-hit_nearest_sph ray (tmin, tmax) obj = foldl(\prev@(nearest, _) el ->
+hit_nearest_sph ray (tmin, tmax) = foldl(\prev@(nearest, _) el ->
     fromMaybe prev
         (hit_dist ray (tmin, nearest) el <&> (,Just el))
-        ) (tmax, Nothing) obj
+        ) (tmax, Nothing)
 
 instance (Hittable a) => Hittable [a] where
     hit_dist ray (tmin, tmax) = (\x -> if x == tmax then Nothing else return x)
@@ -100,17 +106,17 @@ If discriminant is negative then there is no intersection with sphere
 
 \begin{code}
 
-sphere_intersection :: Ray -> Sphere -> Maybe [Double]
+sphere_intersection :: Ray -> Sphere -> Maybe (Double, Double)
 sphere_intersection (Ry origin dir) (Sph center r _ ) = 
     if discriminant >= 0 then
-        Just [
+        Just (
             (-b_half - sqrt discriminant) / a,
             (-b_half + sqrt discriminant) / a
-        ]
+        ) 
     else
         Nothing
     where 
-        origin_spherical = origin <-> center -- (A - C)
+        origin_spherical = origin - center -- (A - C)
         b_half = dir `dot` origin_spherical
         a = length_sqr dir
         c = length_sqr origin_spherical - r*r

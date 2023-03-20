@@ -1,5 +1,6 @@
 \begin{code}
-
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use camelCase" #-}
 module Vec3 where
 
 \end{code}
@@ -16,7 +17,7 @@ instance NFData Vec3 where
     rnf (Vc3 x y z) = seq x $ seq y $ seq z ()
 
 instance Show Vec3 where
-    show (Vc3 x y z) = "(" ++ (show x) ++ " " ++ (show y) ++ " " ++ (show z) ++ ")" 
+    show (Vc3 x y z) = "(" ++ show x ++ " " ++ show y ++ " " ++ show z ++ ")" 
 
 \end{code}
 
@@ -26,28 +27,17 @@ Basic operations with Vec3:
 - Можно умножение и деление на скаляр сделать как символы, чтобы было легче. По поводу этих символов не уверен.
 
 
+\begin{code}
 instance Num Vec3 where
-  {-# INLINE (+) #-}
+  {-# INLINABLE (+) #-}
   Vc3 x1 y1 z1 + Vc3 x2 y2 z2 = Vc3 (x1+x2) (y1+y2) (z1+z2)
-  {-# INLINE (-) #-}
+  {-# INLINABLE (-) #-}
   Vc3 x1 y1 z1 - Vc3 x2 y2 z2 = Vc3 (x1-x2) (y1-y2) (z1-z2)
   Vc3 x1 y1 z1 * Vc3 x2 y2 z2 = Vc3 (x1*x2) (y1*y2) (z1*z2)
-\begin{code}
 
 {-# INLINE (*>>) #-}
 {-# INLINE (<<*) #-}
 {-# INLINE (<<\) #-}
-{-# INLINE (<+>) #-}
-{-# INLINE (<->) #-}
-
-(<+>) :: Vec3 -> Vec3 -> Vec3
-Vc3 x1 y1 z1 <+> Vc3 x2 y2 z2 = Vc3 (x1+x2) (y1+y2) (z1+z2)
-
-(<->) :: Vec3 -> Vec3 -> Vec3
-Vc3 x1 y1 z1 <-> Vc3 x2 y2 z2 = Vc3 (x1-x2) (y1-y2) (z1-z2)
-
-(<<*>>) :: Vec3 -> Vec3 -> Vec3
-Vc3 x1 y1 z1 <<*>> Vc3 x2 y2 z2 = Vc3 (x1*x2) (y1*y2) (z1*z2)
 
 (*>>) :: Double -> Vec3 -> Vec3
 scalar *>> (Vc3 x y z) = Vc3 (scalar * x) (scalar * y) (scalar * z)
@@ -58,6 +48,7 @@ scalar *>> (Vc3 x y z) = Vc3 (scalar * x) (scalar * y) (scalar * z)
 vc <<\ 0 = vc -- Наверное стоит валится тут?
 vc <<\ scalar = vc <<* (1 / scalar)
 
+{-# INLINE dot #-}
 dot :: Vec3 -> Vec3 -> Double
 dot (Vc3 x1 y1 z1) (Vc3 x2 y2 z2) = x1 * x2 + y1 * y2 + z1 * z2
 
@@ -80,7 +71,7 @@ near_zero (Vc3 x y z) = (x <= eps) && (y <= eps) && (z <= eps)
     where eps = 1e-8
 
 instance Eq Vec3 where
-    a == b = length_sqr (a <-> b) < 1^^(-10) -- Или стоит сделать просто покомпонентное сравнение?
+    a == b = length_sqr (a - b) < 1^^(-10) -- Или стоит сделать просто покомпонентное сравнение?
 \end{code}
 
 Сделал константы, как их обычно делают, но я в них вечно путаюсь. (y это вверх?)
