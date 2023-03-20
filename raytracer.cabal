@@ -29,7 +29,7 @@ executable raytracer
     -fspecialise-aggressively
     -fexpose-all-unfoldings
     -- -eventlog
-    "-with-rtsopts=-N -s -A64M "
+    "-with-rtsopts=-N -A64M "
   main-is:             Main.hs
   other-modules: Vec3, Point, Color, Ray, Sphere, Hittable, MyRandom, Material
   -- other-extensions:
