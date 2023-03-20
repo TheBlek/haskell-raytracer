@@ -40,5 +40,10 @@ random_vec_in_sphereS = do
     vec <- random_vec
     if length_sqr vec <= 1 then return vec
     else random_vec_in_sphereS
+
+randomDbls :: State StdGen Double
+randomDbls = do
+    rand <- randomRS (0, 1)
+    return rand
 --head . filter (\vec -> length_sqr vec <= 1) <$> sequence [random_vec | i <- [1..]]
 \end{code}
