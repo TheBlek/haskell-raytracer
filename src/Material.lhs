@@ -49,7 +49,11 @@ scatter (point, norm, Rugged color) ray = do
 scatter (point, normal, Metal color fuzz) ray = do
     let out_dir = reflect (norm . dir $ ray) normal
     offset <- random_vec_in_sphereS
-    return (color, Ry point (out_dir + fuzz *>> offset))
+    let scatter_dir = out_dir + fuzz *>> offset
+    if dot scatter_dir normal < 0 then
+        return (black, Ry point (dir ray))
+    else
+        return (color, Ry point scatter_dir)
 
 scatter (point, normal, Glass ratio) ray = do
     offset <- randomDbls
@@ -58,7 +62,7 @@ scatter (point, normal, Glass ratio) ray = do
     let front_face = normal `dot` dir ray < 0
     let new_ratio = if front_face then ratio else 1 / ratio
     let cant_refract = new_ratio * sin_theta > 1
-    let out_dir = if (cant_refract && reflectance cos_theta new_ratio > offset)
+    let out_dir = if cant_refract && reflectance cos_theta new_ratio > offset
         then reflect (norm . dir $ ray) normal 
         else refract (norm normal) (norm $ dir ray) new_ratio 
     return (white, Ry point out_dir) 
