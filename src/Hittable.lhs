@@ -36,9 +36,6 @@ class Hittable a where
     hit_point ray bounds = return . atPoint ray <=< hit_dist ray bounds
 
     hit_data :: Ray -> (Double, Double) -> a -> Maybe HitData
-    hit_data ray bounds obj =  case hit_point ray bounds obj of
-        Nothing -> Nothing
-        (Just point) -> Just (point, fromJust $ hit_normal ray bounds obj, fromJust $ hit_material ray bounds obj)
 
     hits :: Ray -> (Double, Double) -> a -> Bool
     hits r bounds = isJust . hit_point r bounds
