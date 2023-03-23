@@ -20,7 +20,7 @@ import MyRandom
 
 
 aspect_ratio = 16 / 9
-image_height = 180
+image_height = 360
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -66,8 +66,8 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 50
-    let material1 = Glass 2
+    let samples_per_pixel = 100
+    let material1 = Glass 1.5
     let material2 = Rugged green
     let material3 = Metal light_blue 0.2
     let material4 = Metal (Cl (Vc3 204 153 51)) 1
