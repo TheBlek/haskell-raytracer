@@ -32,6 +32,7 @@ executable raytracer
     "-with-rtsopts=-N -s -A64M"
   main-is:             Main.hs
   other-modules: Vec3, Point, Color, Ray, Sphere, Hittable, MyRandom, Material
+  extensions: DoAndIfThenElse
   -- other-extensions:
   build-depends:       
     base >=0.16 && <10.17,
