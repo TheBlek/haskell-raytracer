@@ -15,7 +15,7 @@ Also, we have done a multithreaded version with some additional performance twea
 Also, we documented the process of multithreading in russian [here](https://luxurious-year-de9.notion.site/Parallel-Haskell-raytracer-63132332960f488aaa04b7cc01e13f8e).
 
 # Examples
-![Final render](render/final.jpg)
+![Final render](renders/final.jpg)
 
 # Run
 You should be able to run the project using
