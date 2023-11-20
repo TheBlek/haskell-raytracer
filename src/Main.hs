@@ -19,6 +19,8 @@ import MyRandom
 
 aspect_ratio = 16 / 9
 image_height = 180
+samples_per_pixel = 50
+max_bounces_per_ray = 50
 image_width = aspect_ratio * image_height
 
 viewport_height = 2
@@ -30,7 +32,7 @@ focal_length = 1
 
 color_ray :: Hittable a => Int -> a -> Ray -> State StdGen Color
 color_ray depth objs ray 
-    | depth >= 50 = return $ Cl zero
+    | depth >= max_bounces_per_ray = return $ Cl zero
     | otherwise = do
         let follow_ray = color_ray (depth+1) objs 
         let map_hit hit = scatter hit ray >>= (\(cl, new_ray) -> absorb cl <$> follow_ray new_ray) 
@@ -65,7 +67,6 @@ write_file filename colors = withFile filename WriteMode (\handle -> do
 
 main :: IO ()
 main = do
-    let samples_per_pixel = 50
     let material1 = Glass 1.5
     let material2 = Rugged green
     let material3 = Metal light_blue 0.2
