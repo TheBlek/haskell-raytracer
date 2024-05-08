@@ -6,6 +6,7 @@ This raytracer implementation supports spheres of different materials:
 - Rugged
 - Metallic, with different roughness
 - Glass, with different transparency values
+
 All with supporting different colours.
 Output image is saved in .ppm format for easiness.
 
